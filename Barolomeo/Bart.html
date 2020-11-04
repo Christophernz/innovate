@@ -1,0 +1,320 @@
+<script runat="server">
+  Platform.Load("core", "1");
+  try {
+</script>
+%%[
+/* Variables declaration */
+var @cssPage
+var @jsPage
+SET @ShowConfirmationMessage = "false"
+
+/* Variables assignment */
+set @cssPage1 ="2332"
+set @jsPage="2333" // Validation Rules
+set @jsJQuery = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"
+set @jsValidation="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.2/jquery.validate.min.js"
+set @triggerPage="43590"
+
+SET @action = QueryParameter('action')
+
+
+
+/* If submit button is pressed create initial logic */
+IF @action == "submitted" THEN
+
+    SET @EmailAddress = QueryParameter("EmailAddress")
+    SET @FirstName = QueryParameter("FirstName")
+    SET @LastName = QueryParameter("LastName")
+    SET @Salutation = QueryParameter("Salutation")
+    SET @JobTitle = QueryParameter("JobTitle")
+    SET @CompanyName = QueryParameter("CompanyName")
+    SET @Address1 = QueryParameter("Address1")
+    SET @Address2 = QueryParameter("Address2")
+    SET @Country = QueryParameter("Country")
+    SET @Phone = QueryParameter("Phone")
+    SET @PayloadDescription = QueryParameter("PayloadDescription")
+    SET @PayloadSizeWeight = QueryParameter("PayloadSizeWeight")
+    SET @Timeframe = QueryParameter("Timeframe")
+
+
+    SET @ShowConfirmationMessage = "true"
+
+    SET @ts = CreateObject("TriggeredSend")
+    SET @tsDef = CreateObject("TriggeredSendDefinition")
+    SET @ts_subkey = @EmailAddress
+
+    SetObjectProperty(@tsDef, "CustomerKey", @triggerPage)
+    SetObjectProperty(@ts, "TriggeredSendDefinition", @tsDef)
+
+    SET @ts_sub = CreateObject("Subscriber")
+    SetObjectProperty(@ts_sub, "EmailAddress", @EmailAddress)
+
+    SetObjectProperty(@ts_sub, "SubscriberKey", @EmailAddress)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "FirstName")
+    SetObjectProperty(@attr, "Value", @FirstName)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "LastName")
+    SetObjectProperty(@attr, "Value", @LastName)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Salutation")
+    SetObjectProperty(@attr, "Value", @Salutation)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "JobTitle")
+    SetObjectProperty(@attr, "Value", @JobTitle)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "CompanyName")
+    SetObjectProperty(@attr, "Value", @CompanyName)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Address1")
+    SetObjectProperty(@attr, "Value", @Address1)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Address2")
+    SetObjectProperty(@attr, "Value", @Address2)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Country")
+    SetObjectProperty(@attr, "Value", @Country)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Phone")
+    SetObjectProperty(@attr, "Value", @Phone)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "PayloadDescription")
+    SetObjectProperty(@attr, "Value", @PayloadDescription)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "PayloadSizeWeight")
+    SetObjectProperty(@attr, "Value", @PayloadSizeWeight)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "Timeframe")
+    SetObjectProperty(@attr, "Value", @Timeframe)
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    SET @attr = CreateObject("Attribute")
+    SetObjectProperty(@attr, "Name", "OptInConsent")
+    SetObjectProperty(@attr, "Value", "true")
+    AddObjectArrayItem(@ts_sub, "Attributes", @attr)
+
+    AddObjectArrayItem(@ts, "Subscribers", @ts_sub)
+
+    SET @ts_statusCode = InvokeCreate(@ts, @ts_statusMsg, @errorCode)
+
+    IF @ts_statusCode != "OK" THEN
+      RaiseError(@ts_statusMsg, 0, @ts_statusCode, @errorCode)
+    ENDIF
+
+
+
+ENDIF
+
+]%%
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Document Title</title>
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="%%=CloudPagesURL(@cssPage1)=%%" type="text/css" media="screen" />
+
+</head>
+
+<body>
+  <main class="main-default">
+
+
+    %%[IF @ShowConfirmationMessage == "true" THEN ]%%
+
+    <p class="main-header-03">Your requested has been submitted. </p>
+    <p> You will shortly recieve a comfirmation email and we will be in touch.</p>
+
+    <script type="text/javascript">
+          parent.location = "https://www.airbus.com/space/space-infrastructures/bartolomeo/bartolomeo-request-form/confirmation.html"
+    </script>
+
+
+
+    %%[ ELSE ]%%
+    <form action="" method="post" name="registration">
+      <div class="form__element form__element--33" style="text-align: right;">
+        <div class="form__element__container" style="text-align: right;" >
+        <fieldset class="radio-group" style="text-align: right;">
+
+          <div class="form__element form__element--flow">
+            <label class="form__radio__label" for="Mr">
+              Mr
+              <input type="radio" id="Mr" name="Salutation" value="Mr" />
+              <span class="radiobutton__circle"></span>
+            </label>
+          </div>
+          <div class="form__element form__element--flow">
+            <label class="form__radio__label" for="Ms">
+              Ms
+              <input type="radio" id="Ms" name="Salutation" value="Ms" />
+              <span class="radiobutton__circle"></span>
+            </label>
+          </div>
+          </fieldset>
+        </div>
+      </div>
+      <div class="form__element form__element--33">
+        <label class="form__element__label">First Name <span class="mandatory">*</span></label>
+        <div class="form__element__container">
+          <input type="text" id="FirstName" name="FirstName" placeholder="Enter your first name" type="text">
+        </div>
+      </div>
+
+      <div class="form__element form__element--33">
+        <label class="form__element__label">Last Name <span class="mandatory">*</span></label>
+        <div class="form__element__container">
+          <input type="text" id="LastName" name="LastName" placeholder="Enter your last name"  type="text">
+          </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Email Address <span class="mandatory">*</span></label>
+        <div class="form__element__container">
+          <input type="email"  id="EmailAddress" name="EmailAddress" 
+            placeholder="Enter you email address">
+        </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Telephone</label>
+        <div class="form__element__container">
+          <input type="text" id="Phone" name="Phone" placeholder="Enter your telephone number">
+        </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Company Name <span class="mandatory">*</span></label>
+        <div class="form__element__container">
+          <input type="text" id="CompanyName" name="CompanyName" placeholder="Enter your company name">
+        </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Job Title</label>
+        <div class="form__element__container">
+          <input type="text" id="JobTitle" name="JobTitle" placeholder="Enter your job title">
+        </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Address</label>
+        <div class="form__element__container">
+          <input type="text" id="Address1" name="Address1" placeholder="Enter your address"><br>
+          <input type="text" id="Address2" name="Address2">
+        
+        </div>
+      </div>
+
+      <div class="form__element form__element--50">
+        <label class="form__element__label">Country</label>
+        <div class="form__element__container">
+          <input type="text" id="Country" name="Country" placeholder="Enter your country">
+        </div>
+      </div>
+
+      <div class="form__element form__element--66">
+        <label class="form__element__label">A brief description of your payload/ mission</label>
+        <textarea type="text" rows="4" name="PayloadDescription" id="PayloadDescription"></textarea>
+      </div>
+
+      <div class="form__element form__element--66">
+        <label class="form__element__label">Approximate size and weight of your payload</label>
+        <input type="text" rows="4" name="PayloadSizeWeight" id="PayloadSizeWeight"></input>
+      </div>
+
+      <div class="form__element form__element--66">
+        <label class="form__element__label">Envisaged timeframe</label>
+        <input type="text" rows="4" name="Timeframe" id="Timeframe"></input>
+      </div>
+
+      <div class="form__element form__element--66">
+        <label class="form__checkbox__label container_checkbox" for="cbxConsent" >
+       I authorise Airbus to collect my personal data in order to contact me for Bartolomeo payroll requests and
+       communications directly related to Bartolomeo. See
+       <a href="https://cloud.contact.airbus.com/privacy-policy.html" target="_blank" rel="noopener">Privacy
+         Policy</a> for additional details. <span class="mandatory">*</span>
+         <input type="checkbox" name="cbxConsent" id="cbxConsent" class="cbxConsent">
+               <span class="checkmark"></span>
+  </label>
+   </div>
+     
+
+      <div class="form__element form__element--100">
+        <input name="submitted" value="true" type="hidden">
+        <button type="submit" value="submitted" id="btbSubmit" name="action">
+          Submit
+        </button>
+      </div>
+
+    </form>
+
+    %%[ ENDIF ]%%
+
+    <!-- <div>
+      ShowConfirmationMessage: %%=v(@ShowConfirmationMessage)=%%<br>
+      EmailAddress: %%=v(@EmailAddress)=%%<br>
+      FirstName: %%=v(@FirstName)=%%<br>
+      LastName: %%=v(@LastName)=%%<br>
+      Salutation: %%=v(@Salutation)=%%<br>
+      JobTitle: %%=v(@JobTitle)=%%<br>
+      CompanyName: %%=v(@CompanyName)=%%<br>
+      Address1: %%=v(@Address1)=%%<br>
+      Address2: %%=v(@Address2)=%%<br>
+      Country: %%=v(@Country)=%%<br>
+      Phone: %%=v(@Phone)=%%<br>
+      PayloadDescription: %%=v(@PayloadDescription)=%%<br>
+      PayloadSizeWeight: %%=v(@PayloadSizeWeight)=%%<br>
+      Timeframe: %%=v(@Timeframe)=%%<br>
+      <br>
+      Status Code: %%=v(@ts_statusCode)=%%<br> -->
+
+    </div>
+  </main>
+
+</body>
+<script src="%%=v(@jsJQuery)=%%"></script>
+<script src="%%=v(@jsValidation)=%%"></script>
+<script src="%%=CloudPagesURL(@jsPage)=%%"></script>
+
+</html>
+
+<script runat="server">
+  } catch (err) {
+    Write("<h3>There is a problem</h3>" +
+      "<p><em>Message</em>: " + Stringify(err.message) +
+      "</p><p><em>Description: </em> " + Stringify(err.description) + "</p>");
+
+  }
+</script>
