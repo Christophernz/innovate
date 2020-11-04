@@ -1,0 +1,101 @@
+<script runat="server">
+  Platform.Load("core", "1");
+  try {
+</script>
+%%[
+/* Variables declaration */
+var @errorMessage
+var @Individual
+var @count
+var @Id
+var @updateRecord
+]%%
+
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Nova Newsletter Unsubscibe</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="reset.css" type="text/css" media="screen"><!-- reset css -->
+  <link rel="stylesheet" href="nova-unsubscribe.css" type="text/css" media="screen"><!-- unsbscribe css -->
+
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="https://www.airbus.com/"><img class="logo"
+          src="https://www.airbus.com/content/dam/corporate-topics/branding/logos/Airbus_white.png"></a>
+    </header>
+
+    <!-- content -->
+    <main>
+      %%[
+          /* Retrieve @Id in url parametter */
+          SET @Id = RequestParameter("qs")
+
+          /* if @Id has correct length */
+          IF length(@Id) == 18 THEN
+            /* retrieve Individual */
+            SET @Individual = RetrieveSalesforceObjects("Individual","Contact__c, HasOptedOutSolicit, Id", "Contact__c", "=",
+            @Id)
+            SET @count = RowCount(@Individual)
+
+            IF @count == '1' THEN
+              SET @IndividualRow = ROW(@Individual,1)
+              SET @IndividualId = FIELD(@IndividualRow,"Id")
+              SET @updateRecord = UpdateSingleSalesforceObject('Individual',@IndividualId,"HasOptedOutSolicit", "True")
+        ]%%
+              <h1>Unsubscribe successful.</h1>
+              <p>Sorry to see you go. You'll no longer receive this newsletter.</p>
+              <p>Thank you for your interest in Airbus and hope to have you sign up again soon.</p>
+        %%[
+            ELSE
+        ]%%
+              <h1>Unsubscribe failed.</h1>
+              <p>We could not identify you, please click again in your email.</p>
+        %%[
+            ENDIF
+            
+            ELSE
+        ]%%
+            <h1>Unsubscribe failed.</h1>
+            <p>We could not identify you, could you please contact Airbus directly <a
+                href="mailto:kristina.bandic@airbus.com?subject=I%20want%20to%20unsubscribe%20from%20your%20Newsletter">here</a>.
+            </p>
+            %%[
+          ENDIF
+      ]%%
+
+
+      <p>Go back to <a href="https://www.airbus.com/">airbus.com</a></p>
+    
+         <ul>
+           <li>Id : %%=v(@Id)=%%</li>  
+           <li>count : %%=v(@count)=%%</li>  
+           <li>qs :   %%=v(@qs)=%%</li>  
+           <li>Individual : %%=v(@Individual)=%%</li>
+           <li>IndividualId : %%=v(@IndividualId)=%%</li>
+           <li>updateRecord : %%=v(@updateRecord)=%%</li>
+         </ul>
+    </main>
+
+    <!-- footer -->
+    <footer>
+      <p>Airbus S.A.S. 2019</p>
+    </footer>
+  </div>
+</body>
+
+</html>
+<script runat="server">
+  } catch (err) {
+    Variable.SetValue("@errorMessage", "Error Message: " + Stringify(err.message) + " \n\rError description: " +
+      Stringify(err.description));
+    Write('<div style="border:1px black solid;background-color:red;"><b>Error Message:</b> ' + Stringify(err.message) +
+      "<br /><br /><b>Description :</b> " + Stringify(err.description) + "</div>");
+  }
+</script>

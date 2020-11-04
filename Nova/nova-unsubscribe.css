@@ -1,0 +1,171 @@
+/* !$ Layout */
+
+*, *:before, *:after{
+    margin:0;
+    padding:0;
+    border:0;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    box-sizing:border-box;
+}
+
+html {
+ height: 100%;
+}
+
+body {
+ font-family: Arial, sans-serif;
+ font-size: 15px;
+ line-height: 120%;
+ color: rgb(24,55,130);
+ -webkit-tap-highlight-color: transparent;
+ height: 100%;
+}
+
+.container {
+ display: flex;
+ flex-flow: column;
+ height: 100%;
+}
+
+
+
+
+/* !$ Text */
+
+h1 {
+ font-weight: 700;
+ font-size: 23px;
+ margin-bottom: 30px;
+}
+
+p {
+ font-weight: 700;
+ margin-bottom: 15px;
+}
+
+a {
+ color: rgb(24,55,130);
+}
+
+
+
+
+/* !$ Header */
+
+header {
+ flex: 0 1 auto;
+ background: rgb(0,32,91);
+ padding: 30px 10vw;
+}
+
+header a {
+ display: inline-block;
+}
+
+.logo {
+ width: 100px;
+ height: auto;
+}
+
+
+
+
+/* !$ Main */
+
+main {
+ flex: 1 1 auto;
+ padding: 30px 10vw;
+}
+
+
+
+
+/* !$ Footer */
+
+footer {
+ flex: 0 1 auto;
+ padding: 60px 10vw 30px 10vw;
+ background: rgb(0,32,91);
+}
+
+footer p {
+ font-size: 12px;
+ font-weight: 700;
+ color: rgba(255,255,255,.6);
+ margin: 0;
+ border-top: 1px solid white;
+ padding-top: 15px;
+}
+
+
+
+
+
+
+/* !$ >= 700px */
+@media all and (min-width: 700px){
+ 
+ body {
+  font-size: 20px;
+ }
+ 
+ 
+ 
+ /* !$ Text */
+
+ h1 {
+  font-size: 30px;
+ }
+ 
+ footer p {
+  padding-top: 30px;
+ }
+ 
+ 
+ 
+ /* !$ Main */
+
+ main {
+  padding: 60px 10vw;
+ }
+ 
+}
+
+
+
+
+
+
+/* !$ >= 1000px */
+@media all and (min-width: 1000px){
+ 
+ /* !$ Header */
+
+ header {
+  padding: 50px 10vw;
+ }
+ 
+ .logo {
+  width: 150px;
+  height: auto;
+ }
+
+
+
+ /* !$ Main */
+
+ main {
+  padding: 80px 10vw;
+ }
+ 
+}
+
+
+
+
+/* !$ >= 1500px */
+@media all and (min-width: 1500px){
+ 
+ 
+}

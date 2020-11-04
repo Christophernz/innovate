@@ -1,0 +1,84 @@
+%%[
+/* Variables declaration */
+VAR @errorMessage
+VAR @contacts, @ContactRow, @ContactID
+VAR @count
+VAR @updateContact
+VAR @subscriberKey
+]%%
+
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Nova Newsletter Unsubscibe</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="reset.css" type="text/css" media="screen"><!-- reset css -->
+  <link rel="stylesheet" href="nova-unsubscribe.css" type="text/css" media="screen"><!-- unsbscribe css -->
+
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="https://www.airbus.com/"><img class="logo"
+          src="https://www.airbus.com/content/dam/corporate-topics/branding/logos/Airbus_white.png"></a>
+    </header>
+
+    <!-- content -->
+    <main>
+      %%[
+      /* Retrieve @subscriberKey in qs parametter */
+      SET @subscriberKey = AttributeValue("_subscriberkey")
+
+      /* retrieve contact */
+
+      SET @contacts = RetrieveSalesforceObjects(
+      "Contact",
+      "Id,Email",
+      "Id", "=",@subscriberKey)
+      SET @count = RowCount(@contacts)
+
+      IF @count == '1' THEN
+      SET @ContactRow = ROW(@contacts,1)
+      SET @ContactID = FIELD(@ContactRow,"Id")
+      SET @ContactEmail = FIELD(@ContactRow,"Email")
+      SET @updateRecord =
+      UpdateSingleSalesforceObject('Contact',@ContactID,"RXC_Communication_Innovation_Department__c", "False")
+      ]%%
+      <h1>%%=v(@ContactEmail)=%% successful unsubscribed.</h1>
+      <p>Sorry to see you go. You'll no longer receive this newsletter.</p>
+      <p>Thank you for your interest in Airbus and hope to have you sign up again soon.</p>
+      %%[
+      ELSE
+      ]%%
+      <h1>Unfortunately we could not identify. </h1>
+      <p>Could you please contact Airbus directly <a
+          href="mailto:kristina.bandic@airbus.com?subject=I%20want%20to%20unsubscribe%20from%20your%20Newsletter">here</a>.
+        %%[
+        ENDIF
+        ]%%
+        <p>Go back to <a href="https://www.airbus.com/">airbus.com</a></p>
+        <ul>
+          <li>Id : %%=v(@Id)=%%</li>
+          <li>subscriberKey : %%=v(@subscriberKey)=%%</li>
+          <li>count : %%=v(@count)=%%</li>
+          <li>qs : %%=v(@ContactEmail)=%%</li>
+          <li>Individual : %%=v(@Individual)=%%</li>
+          <li>IndividualId : %%=v(@IndividualId)=%%</li>
+          <li>updateRecord : %%=v(@updateRecord)=%%</li>
+        </ul>
+    </main>
+
+    <!-- footer -->
+    <footer>
+      <p>Airbus S.A.S. 2019</p>
+    </footer>
+  </div>
+</body>
+
+</html>

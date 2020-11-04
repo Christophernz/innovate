@@ -1,0 +1,287 @@
+<script runat="server">
+        Platform.Load("core","1");
+        try {
+      </script>
+      %%[
+          /* Variables declaration */
+          var @Firstname, @Lastname, @Email
+          var @Profession, @IfOther
+          var @Consent, @CommInnoDepart
+          var @Success, @AccountID
+          var @Contacts, @count, @Individuals
+          var @errorMessage    
+      
+          var @updateIndividual
+      
+      
+          /* Variables initialisation */
+          SET @Firstname = RequestParameter("Firstname")
+          SET @Lastname = RequestParameter("Lastname")
+          SET @Email = RequestParameter("Email")
+      
+          SET @Profession = RequestParameter("Profession")
+          SET @IfOther = RequestParameter("IfOther")
+      
+          SET @Consent = RequestParameter("Consent")
+          SET @CommInnoDepart = RequestParameter("Communication_Innovation_Department")
+          SET @Success = RequestParameter("Success")
+      
+          SET @count = 0
+      
+          /* select the Account */
+          IF @Profession == "Airbus employee" THEN
+              SET @AccountID = "0010Y00000TfosvQAB"
+          ELSE
+              SET @AccountID = "0011n00002FKTCrAAP"
+          ENDIF
+      
+          /* If button is pressed, check if a contact already exist */
+          IF RequestParameter("submitted") == true THEN
+              /* Retrieve Contact */
+              SET @Contacts = RetrieveSalesforceObjects(
+                                                       "Contact",
+                                                       "Id,Email",
+                                                       "Email", "=",RequestParameter("Email") )
+             SET @count = RowCount(@Contacts)
+      
+             IF @count != 0 then
+                 SET @subscriberRow = Row(@Contacts, 1)
+      
+                 /* Retrieve releated Individual */
+                 SET @Individuals = RetrieveSalesforceObjects(
+                                                           "Individual",
+                                                           "Id,Contact__c",
+                                                           "Contact__c", "=", Field(@subscriberRow, "Id"))
+             ENDIF
+          ENDIF
+      
+          /* Contact doesn't exist, created it */
+          IF RequestParameter("submitted") == true AND @count == 0 THEN
+                  var @createContact
+                  SET @createContact = CreateSalesforceObject(
+                                "Contact", 8,
+                                "FirstName", @Firstname,
+                                "LastName", @Lastname,
+                                "Email", @Email,
+                                "RXC_Contact_Role__c", @Profession,
+                                "RXC_Other_Contact_Roles__c", @IfOther,
+                                "RXC_Communication_Innovation_Department__c", @CommInnoDepart,
+                                "AccountID", @AccountID,
+                                "RecordTypeId", "0120Y000000aJbtQAE")                  
+      
+                  /* Create releated Individual */
+                  IF not empty(@createContact) THEN
+                      var @createIndividual1
+                      SET @createIndividual1 = CreateSalesforceObject(
+                                                    "Individual", 3,
+                                                    "FirstName", @Firstname,
+                                                    "LastName", @Lastname,
+                                                    "Contact__c", @createContact)
+                  ENDIF 
+      
+          /* contact already exist, update it */
+          ELSEIF RequestParameter("submitted") == true AND @count != 0 THEN
+              /* update contact */
+              SET @subscriberContact = Row(@Contacts, 1)
+              SET @ContactId = Field(@subscriberContact, "Id")
+      
+              SET @updateRecord = UpdateSingleSalesforceObject(
+                                        "Contact", @ContactId,
+                                        "FirstName", @Firstname,
+                                        "LastName", @Lastname,
+                                        "Email", @Email,
+                                        "AccountID", @AccountID,
+                                        "RXC_Contact_Role__c", @Profession,
+                                        "RXC_Other_Contact_Roles__c", @IfOther,
+                                        "RXC_Communication_Innovation_Department__c", @CommInnoDepart)
+      
+              /* Contact exists, create or update related Individual */
+              IF RowCount(@Individuals) == 0 THEN
+                      var @createIndividual2
+                      SET @createIndividual2 = CreateSalesforceObject(
+                                                    "Individual", 3,
+                                                    "FirstName", @Firstname,
+                                                    "LastName", @Lastname,
+                                                    "Contact__c", @ContactId)
+              ELSE
+                SET @subscriberIndividual = Row(@Individuals, 1)
+                SET @IndividualId = Field(@subscriberIndividual, "Id")
+                SET @updateIndividual = UpdateSingleSalesforceObject(
+                                                  "Individual", @IndividualId,
+                                                  "FirstName", @Firstname,
+                                                  "LastName", @Lastname,
+                                                  "HasOptedOutSolicit", "False") 
+      
+              ENDIF
+          ENDIF
+      ]%%  
+      <script runat="server">
+        }catch (err) {
+          Variable.SetValue("@errorMessage", "Error Message: " + Stringify(err.message) + " \n\rError description: " + Stringify(err.description));
+          Write('<div style="border:1px black solid;background-color:red;"><b>Error Message:</b> ' + Stringify(err.message) + "<br /><br /><b>Description :</b> " + Stringify(err.description)+"</div>");
+        }
+      </script>
+      <script runat="client">
+        /*console.log(" % % =v(@errorMessage) = % % ");*/
+      </script>
+      
+      <title>Nova newsletter</title>
+      <!--<title>I wish to receive Nova Newsletter</title>-->
+      
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+      
+      <!-- CSS -->
+      <link rel="stylesheet" href="%%=CloudPagesURL(824)=%%" type="text/css" media="screen"><!-- resetCSS -->
+      
+      <main>
+        <!-- If user click submit button -->
+        %%[IF RequestParameter("submitted") == true THEN ]%% 
+        <link rel="stylesheet" href="%%=CloudPagesURL(825)=%%" type="text/css" media="screen"><!-- ConfirmationPage -->
+        <!-- <div id="thanskDiv">
+          <p>Thanks for signing up to our newsletter!</p>
+          <p>You�ll now receive our latest Nova newsletter.</p>
+        </div>-->
+        <script type="text/javascript">
+           parent.location = "https://www.airbus.com/innovation/nova-by-airbus-newsletter-confirmation.html"
+        </script>
+      
+        <!-- Initialization of the first page, show input form -->
+        %%[ ELSE ]%%
+        <link rel="stylesheet" href="%%=CloudPagesURL(826)=%%" type="text/css" media="screen"><!-- SignUpPage -->
+      
+        <!--<h1>Sign up to receive <span class="title__block">�Nova�</span> newsletter</h1>-->
+        <h1>I wish to receive The "Nova" Newsletter</h1>
+        
+        <div class="form__notice form__element--100">
+            <p>
+          Previously "The future is electric".
+        </p>
+        </div>
+      
+        <form>
+          <div class="form__element form__element--50">
+            <label class="form__element__label">First name*</label>
+            <div class="form__element__container">
+              <input required="true" name="Firstname" value="%%=v(@Firstname)=%%" type="text" placeholder="Enter your first name">
+              <span class="checkmark-notice"></span>
+              <div class="error-notice">Mandatory field</div>
+            </div>
+          </div>
+      
+          <div class="form__element form__element--50">
+            <label class="form__element__label">Last name*</label>
+            <div class="form__element__container">
+              <input required="true" name="Lastname" value="%%=v(@Lastname)=%%" type="text" placeholder="Enter your last name">
+              <span class="checkmark-notice"></span>
+              <div class="error-notice">Mandatory field</div>
+            </div>
+          </div>
+      
+          <div class="form__element form__element--66">
+            <fieldset class="radio-group">
+              <!--<p class="form__element__label">I am*</p>-->
+              <p class="form__element__label">Please select the profile type</p>
+              <div class="flow-group">
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-1">
+                    Aviation professional
+                    <input id="profession-1" name="Profession" value="Aviation professional" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-2">
+                    Journalist / media
+                    <input id="profession-2" name="Profession" value="Journalist-Media" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-3">
+                    Engineer
+                    <input id="profession-3" name="Profession" value="Engineer" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-8">
+                    Airbus employee
+                    <input id="profession-8" name="Profession" value="Airbus employee" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-4">
+                    Aviation fan
+                    <input id="profession-4" name="Profession" value="Aviation fan" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-5">
+                    Researcher / university
+                    <input id="profession-5" name="Profession" value="Researcher-University" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-6">
+                    Student
+                    <input id="profession-6" name="Profession" value="Student" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+                <div class="form__element form__element--flow">
+                  <label class="form__radio__label" for="profession-7">
+                    Other<!-- (open field to specify)-->
+                    <input id="profession-7" name="Profession" value="Other" required="" type="radio">
+                    <span class="radiobutton__circle"></span>
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+            <div class="error-notice">Mandatory field</div>
+          </div>
+      
+          <div class="form__element form__element--33">
+            <label class="form__element__label">If other, please specify</label>
+            <textarea type="text" rows="4" name="IfOther" value="%%=v(@IfOther)=%%"></textarea>
+            <div class="error-notice">Mandatory field</div>
+          </div>
+      
+          <div class="form__element form__element--66">
+            <label class="form__element__label">Email*</label>
+            <div class="form__element__container">
+              <input type="email" required="true" name="Email" value="%%=v(@Email)=%%" placeholder="Enter your email address" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,63}$" title="Please provide a valid email address">
+              <span class="checkmark-notice"></span>
+              <div class="error-notice">Mandatory field</div>
+            </div>
+          </div>
+      
+          <div class="form__element form__element--66">
+            <label class="form__checkbox__label">
+              <!--I consent to receive The Nova newsletter.-->
+              I authorise Airbus to collect my personal data in order to regularly send me the "Nova" newsletter and related communications. <a href="https://cloud.contact.airbus.com/privacy-policy.html" target="_blank">See Privacy Policy</a>.
+      
+              <input name="Consent" required="" value="%%=v(@Consent)=%%" type="checkbox">
+              <span class="checkbox__square"></span>
+        <div class="error-notice">You must agree to provide your consent before submitting your personal data</div>
+            </label>
+          </div>
+      
+          <div class="form__element form__element--100">
+            <input name="Communication_Innovation_Department" value="true" type="hidden">
+            <input name="submitted" value="true" type="hidden">
+            <button>Submit</button>
+          </div>
+          <div class="form__notice form__element--100">
+            <p>* Mandatory field</p>
+          </div>
+        </form>
+      
+        %%[ ENDIF ]%%
+        
+        <script async="" custom-element="amp-script" src="%%=CloudPagesURL(831)=%%"></script> <!-- script_JS -->
+      </main>

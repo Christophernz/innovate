@@ -1,0 +1,138 @@
+%%[
+var @Id
+var @Message
+var @Contact, @Email, @ContactID, @Subscribed
+var @DebugMessage
+var @Individuals, @IndividualID
+
+set @subscriberKey = AttributeValue("_subscriberkey")
+IF empty(@subscriberKey) THEN 
+    SET @Id = "0031w00000bYevuAAC" 
+ELSE
+    SET @Id = RequestParameter("_subscriberkey") 
+ENDIF
+
+SET @updateContact = "0"          
+
+IF @key == "" THEN
+  SET @DebugMessage = "Key Doesn't Exists"
+ELSE
+    SET @Contacts = RetrieveSalesforceObjects(
+                                              "Contact",
+                                              "Id,Email,RMC_Airbus_Foundation_Discovery_Space__c",
+                                              "Id", "=",@Id )
+    SET @count = RowCount(@Contacts)           
+ENDIF
+
+IF @count != 0 then
+    SET @Contact = ROW(@Contacts,1) 
+    SET @ContactID = FIELD(@Contact,"Id")
+    SET @Email = FIELD(@Contact,"Email")
+    SET @Subscribed  = FIELD(@Contact,"RMC_Airbus_Foundation_Discovery_Space__c")
+
+    SET @updateContact = UpdateSingleSalesforceObject(
+                            'Contact',@ContactID,
+                            'RMC_Airbus_Foundation_Discovery_Space__c', "false")
+
+    SET @DebugMessage =  @updateContact
+ENDIF
+]%%
+<html lang="en">
+<head>
+
+<meta charset="utf-8" />
+<title>“Airbus Foundation Discovery Space” newsletter
+</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, user-scalable=no">
+<!-- CSS -->
+<link
+  rel="stylesheet"
+
+  href="%%=CloudPagesURL(1533)=%%"
+  type="text/css"
+  media="screen"
+  />
+<link
+  rel="stylesheet"
+  href="%%=CloudPagesURL(1531)=%%"
+  type="text/css"
+  media="screen"
+  />
+</head>
+<body>
+<div class="container">
+<header>
+<a href="https://www.airbus.com/">
+  <svg
+       class="logo"
+       data-name="Layer 1"
+       xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 200 37.04"
+       >
+    <defs>
+      <style>
+        .cls-1 {
+          fill: #fff;
+        }
+      </style>
+    </defs>
+    <title>AIRBUS_White
+    </title>
+    <path
+          class="cls-1"
+          d="M92.19,12.65C92.19,5.89,87.75.76,78.62.76H60.23V36.28h8.65V8.43h9.79c3.62,0,4.92,2.06,4.92,4.44s-1.35,4.43-5,4.43H70.23l11.9,19H92s-8.11-12.76-8.06-12.76c5-1.19,8.28-4.7,8.28-10.87"
+          />
+    <rect
+          class="cls-1"
+          x="45.74"
+          y="0.76"
+          width="8.65"
+          height="35.52"
+          />
+    <polygon
+             class="cls-1"
+             points="18.11 0.76 0 36.28 9.73 36.28 12.67 30.33 27.25 30.33 23.63 22.87 16.35 22.87 21.73 11.95 21.84 11.95 33.95 36.28 43.9 36.28 25.79 0.76 18.11 0.76"
+             />
+    <path
+          class="cls-1"
+          d="M123.76,17.84c2.76-1.51,4.22-3.94,4.22-7.51C128,4.6,123.71.76,116.52.76H96.3V36.28h21c7.35,0,12.17-4,12.17-10a8.63,8.63,0,0,0-5.74-8.49M105,8.27h11.57a3.06,3.06,0,0,1,3.08,3.14,3.07,3.07,0,0,1-3.13,3.13H105V8.27Zm11.79,20.55H105V21.57h11.79a3.58,3.58,0,0,1,3.73,3.57,3.63,3.63,0,0,1-3.73,3.68"
+          />
+    <path
+          class="cls-1"
+          d="M156.8,20.6c0,5.39-2.49,8.38-7.41,8.38S142,26,142,20.6V.76h-8.87V20c0,11,5.79,17.09,16.22,17.09S165.67,30.93,165.67,20V.76H156.8Z"
+          />
+    <path
+          class="cls-1"
+          d="M188.75,14.87c-8.21-2-10-2.19-10-4.54,0-1.82,2.06-2.71,5.52-2.71,4.59,0,9.49,1.16,12.27,2.87l2.76-7.25A32.68,32.68,0,0,0,184.38,0c-9.14,0-14.28,4.54-14.28,10.65,0,6.58,3.84,9.25,12.65,11.14,6.87,1.51,8.33,2.46,8.33,4.38,0,2.09-1.89,3-5.62,3a29.75,29.75,0,0,1-14.22-3.46l-2.65,7.57c4.27,2.27,10.65,3.73,17.08,3.73,9,0,14.33-4.17,14.33-11.14,0-5.6-3.62-9.19-11.25-11"
+          />
+  </svg>
+</a>
+</header>
+<main class="main-centered">
+
+
+
+<h1 class="info-header-01">Unsubscribe successful for <em>%%=v(@Email)=%%</em>.
+</h1>
+<p class="info-text-01">
+  Sorry to see you go. You’ll no longer receive this newsletter.
+</p>
+<p class="info-text-01">
+  Thank you for your interest in Airbus Foundation Discovery Club and hope to have you sign up again soon.
+</p>
+<p class="info-text-01">
+  Go back to 
+  <a href="https://www.airbus.com/">airbus.com</a>
+</p>
+</main>
+<footer>
+<p>©Airbus S.A.S. 2020
+</p>
+</footer>
+</div>
+
+</body>
+</html>

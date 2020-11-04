@@ -1,0 +1,56 @@
+    %%[
+    /* Variables declaration */
+    VAR @errorMessage
+    VAR @contacts, @ContactRow, @ContactID
+    VAR @count
+    VAR @updateContact
+    VAR @subscriberKey
+    ]%%
+
+  <!-- CSS -->
+<link rel="stylesheet" href="%%=CloudPagesURL(824)=%%" type="text/css" media="screen"><!-- reset css -->
+<link rel="stylesheet" href="%%=CloudPagesURL(827)=%%" type="text/css" media="screen"><!-- unsbscribe css -->
+    
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <a href="https://www.airbus.com/"><img class="logo"
+          src="https://www.airbus.com/content/dam/corporate-topics/branding/logos/Airbus_white.png"></a>
+    </header>
+
+    <!-- content -->
+    <main>
+      %%[
+          /* Retrieve @subscriberKey in qs parametter */
+          SET @subscriberKey = AttributeValue("_subscriberkey")
+
+          /* retrieve contact */
+          SET @contacts = RetrieveSalesforceObjects("Contact","Id,Email","Id", "=",@subscriberKey)
+          SET @count = RowCount(@contacts)
+
+          IF @count == '1' THEN
+            SET @ContactRow = ROW(@contacts,1)
+            SET @ContactID = FIELD(@ContactRow,"Id")
+            SET @ContactEmail = FIELD(@ContactRow,"Email")
+            SET @updateRecord =
+            UpdateSingleSalesforceObject('Contact',@ContactID,"RXC_Communication_Innovation_Department__c", "False")
+            ]%%
+            <h1>%%=v(@ContactEmail)=%% successful unsubscribed.</h1>
+            <p>Sorry to see you go. You'll no longer receive this newsletter.</p>
+            <p>Thank you for your interest in Airbus and hope to have you sign up again soon.</p>
+            %%[
+          ELSE
+            ]%%
+            <h1>Unfortunately we could not identify you. </h1>
+            <p>Could you please contact Airbus directly <a href="mailto:kristina.bandic@airbus.com?subject=I%20want%20to%20unsubscribe%20from%20your%20Newsletter">here</a>.
+            %%[
+          ENDIF
+          ]%%
+        <p>Go back to <a href="https://www.airbus.com/">airbus.com</a></p>
+    </main>
+
+    <!-- footer -->
+    <footer>
+      <p>Airbus S.A.S. 2019</p>
+    </footer>
+  </div>
