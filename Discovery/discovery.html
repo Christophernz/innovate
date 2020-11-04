@@ -1,0 +1,605 @@
+<script runat="server">        Platform.Load("core","1"); try {</script>
+  <!DOCTYPE html>
+  <html lang="en">
+   <head>
+     %%[
+      /* Variables declaration */
+      var @Firstname, @Lastname, @Email, @MailingCountry, @RMC_Profile, @RMC_Age_of_Students, @CACS_Nationality__c,  @RMC_Content_Usage, @RMC_Comms_Foundation_Contact 
+      var @Profession, @IfOther
+      var @Consent, @CommInnoDepart
+      var @AccountID
+      var @Contacts, @count, @Individuals, @Subscribed
+      var @createIndividual, @createContact
+      var @errorMessage, @messageSubmit, @errorSubmit
+      var @updateContact
+      var @Confirmation
+  
+  
+      /* Variables initialisation */
+      SET @Firstname = RequestParameter("Firstname")
+      SET @Lastname = RequestParameter("Lastname")
+      SET @Email = RequestParameter("Email")
+      SET @RMC_Profile = RequestParameter("RMC_Profile")
+      SET @RMC_Age_of_Students = RequestParameter("RMC_Age_of_Students")
+      SET @MailingCountry = RequestParameter("MailingCountry")
+      SET @RMC_Content_Usage = RequestParameter("RMC_Content_Usage")
+      SET @IndividualsAge = RequestParameter("IndividualsAge")
+      SET @Consent = RequestParameter("Consent")
+      SET @RMC_Comms_Foundation_Contact = RequestParameter("RMC_Comms_Foundation_Contact")
+      SET @CommInnoDepart = RequestParameter("Communication_Innovation_Department")
+      SET @action =RequestParameter('action')
+      SET @Confirmation = CloudPagesURL(1535)
+
+      SET @ShowConfirmationMessage = "false"
+      SET @AccountID = "0011n00002FKTCrAAP"
+  
+      SET @count = 0
+  
+      /* If submit button is pressed, check if a contact already exist */
+      IF @action == "submitted" THEN
+          /* Retrieve Contact */
+          SET @Contacts = RetrieveSalesforceObjects(
+                                                  "Contact",
+                                                  "Id,Email,RMC_Airbus_Foundation_Discovery_Space__c,LastName, FirstName",
+                                                  "Email", "=",@Email, 
+                                                  )
+          SET @count = RowCount(@Contacts)
+      ENDIF
+  
+     /* If contact exists then retrieve Contact details and Individual */
+      IF @count != 0 then
+        SET @Contact = ROW(@Contacts,1) 
+        SET @ContactID = FIELD(@Contact,"Id")
+        SET @Subscribed  = FIELD(@Contact,"RMC_Airbus_Foundation_Discovery_Space__c")
+  
+        /* Retrieve related Individual - To remove later. */
+        SET @Individuals = RetrieveSalesforceObjects(
+                                                  "Individual",
+                                                  "Id,Contact__c",
+                                                  "Contact__c", "=", Field(@Contact, "Id")
+                                                  )
+        SET @Individual = ROW(@Individuals,1) 
+        SET @IndividualID   = FIELD(@Individual,"Id")
+      ENDIF
+      
+  
+          /* IF Contact already exists AND subscribed THEN tell user */
+          /* ELSEIF no contact exists THEN create contact */
+          /* ELSEIF contact exists but NOT subscribed THEN subscribe contact (no data change) */
+      IF @action == "submitted" AND @count != 0 AND @Subscribed==true THEN
+        SET @errorSubmit = "This email address is already subscribed to the Discovery Club newsletter."
+          
+      ELSEIF @action == "submitted" AND @count ==0 THEN
+  
+
+      /* Create contact */
+
+      SET @createContact = CreateSalesforceObject(
+        "Contact", 10,
+        "firstname", @Firstname,
+        "lastname", @Lastname,
+        "Email", @Email,
+        "RMC_Profile__c", @RMC_Profile,
+        "MailingCountry", @MailingCountry,
+        "RMC_Age_of_Students__c", @RMC_Age_of_Students,
+        "AccountID", @AccountID,
+        "RecordTypeId", "0120Y000000aJbtQAE",
+        "RMC_Content_Usage__c", @RMC_Content_Usage,
+        "RMC_Airbus_Foundation_Discovery_Space__c", "true")
+  
+        /* Create related Individual */
+
+        SET @createIndividual = CreateSalesforceObject(
+                                            "Individual", 4,
+                                            "FirstName", @Firstname,
+                                            "LastName", @Lastname,
+                                            "Contact__c", @createContact,
+                                            "IndividualsAge", @IndividualsAge
+                                            )        
+
+   
+        SET @ShowConfirmationMessage = "true"
+        SET @errorMessage = "creating contacting"
+
+  
+      ELSEIF @action == "submitted" AND @count != 0 AND @Subscribed==false THEN
+        SET @updateContact = UpdateSingleSalesforceObject(
+                                      'Contact',@ContactID,
+                                      'RMC_Airbus_Foundation_Discovery_Space__c', "true")
+        SET @errorMessage = "subscribing contacting"
+        SET @ShowConfirmationMessage = "true"
+   
+      ELSE
+        
+      ENDIF
+  
+  
+  ]%%
+    
+    <meta charset="utf-8" />
+    <title>“Airbus Foundation Discovery Space” Learning Guides</title>
+  
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      href="%%=CloudPagesURL(1533)=%%"
+      type="text/css"
+      media="screen" />
+    <link
+      rel="stylesheet"
+    
+      href="%%=CloudPagesURL(1531)=%%"
+      type="text/css"
+      media="screen"/>
+   </head>
+   <body>   
+    <main class="main-default">
+
+      <!-- If user click submit button -->
+      %%[IF @ShowConfirmationMessage == "true" THEN ]%% 
+        <script type="text/javascript">
+          parent.location = "https://www.airbus.com/company/sustainability/airbus-foundation/discovery-space/discovery-club-learning-guides-confirmation.html"
+        </script>
+      <!-- Show input form -->
+      %%[ ELSE ]%%
+
+     <h1 class="main-header-02">
+        Sign up to receive the “Discovery Club” Learning Guides
+     </h1>
+     <form action="" method="post">
+     
+      <div class="form__element form__element--50">
+       <label class="form__element__label">First name*</label>
+       <div class="form__element__container">
+        <input
+         type="text"
+         name="Firstname"
+         placeholder="Enter your first name"
+         required
+        />
+        <div class="error-notice"></div>
+       </div>
+      </div>
+  
+      <div class="form__element form__element--50">
+       <label class="form__element__label">Last name*</label>
+       <div class="form__element__container">
+        <input
+         type="text"
+         name="Lastname"
+         placeholder="Enter your Last name"
+         required
+        />
+        <div class="error-notice"></div>
+       </div>
+      </div>
+      
+      <div class="form__element form__element--50">
+       <label class="form__element__label">Email*</label>
+       <div class="form__element__container">
+        <input
+         type="email"
+         required="true"
+         name="Email"
+         placeholder="Enter your email address"
+         pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,63}$"
+         required
+         title="Please provide a valid email address"
+         value=""
+          />
+        <span class="checkmark-notice"></span>
+        <div class="error-notice">Mandatory field</div>
+        <div class="error-submit">%%=v(@errorSubmit)=%%</div>      
+         </div>
+      </div>
+  
+      <div class="form__element form__element--50">
+       <fieldset class="radio-group">
+        <p class="form__element__label">Profile*</p>
+  
+        <div class="flow-group">
+         <div class="form__element form__element--flow">
+          <label
+           class="form__radio__label"
+           for="profile-1">
+           Educator
+           <input
+            type="radio"
+            id="profile-1"
+            name="RMC_Profile"
+            value="educator"
+            required
+           />
+           <span class="radiobutton__circle"></span>
+          </label>
+         </div>
+         <div class="form__element form__element--flow">
+          <label
+           class="form__radio__label"
+           for="profile-2">
+           Parent
+           <input
+            type="radio"
+            id="profile-2"
+            name="RMC_Profile"
+            value="parent"
+            required
+           />
+           <span class="radiobutton__circle"></span>
+          </label>
+         </div>
+        </div>
+       </fieldset>
+       <div class="error-notice">Mandatory field</div>
+      </div>
+  
+      <div class="form__element form__element--50">
+           <div class="form__element__container"> 
+       <label class="form__element__label">Age of Student(s)</label>
+        <select name="RMC_Age_of_Students">
+          <option value="" required >Select the age of your student(s)</option>
+          <option value="Less than 8">Less than 8</option>
+          <option value="9 to 12">9 to 12</option>
+          <option value="13+">13+</option>
+        </select>
+        <div class="error-notice"></div>
+       </div>
+      </div>
+  
+      <div class="form__element form__element--50">
+       <label class="form__element__label">Location</label>
+       <div class="form__element__container">
+        <!-- ISO-3166-1 - Alpha 2 Codes 
+        from https://www.freeformatter.com/iso-country-list-html-select.html -->
+        <select name="MailingCountry">
+         <option value="" selected>Select your location</option>
+            <option data-name="Afghanistan" value="Afghanistan">Afghanistan</option>
+            <option data-name="Albania" value="Albania">Albania</option>
+            <option data-name="Algeria" value="Algeria">Algeria</option>
+            <option data-name="American Samoa" value="American Samoa">American Samoa</option>
+            <option data-name="Andorra" value="Andorra">Andorra</option>
+            <option data-name="Angola" value="Angola">Angola</option>
+            <option data-name="Anguilla" value="Anguilla">Anguilla</option>
+            <option data-name="Antarctica" value="Antarctica">Antarctica</option>
+            <option data-name="Antigua and Barbuda" value="Antigua and Barbuda">Antigua and Barbuda</option>
+            <option data-name="Argentina" value="Argentina">Argentina</option>
+            <option data-name="Armenia" value="Armenia">Armenia</option>
+            <option data-name="Aruba" value="Aruba">Aruba</option>
+            <option data-name="Asia Misc" value="Asia Misc">Asia Misc</option>
+            <option data-name="Australia" value="Australia">Australia</option>
+            <option data-name="Austria" value="Austria">Austria</option>
+            <option data-name="Azerbaijan" value="Azerbaijan">Azerbaijan</option>
+            <option data-name="Bahamas" value="Bahamas">Bahamas</option>
+            <option data-name="Bahrain" value="Bahrain">Bahrain</option>
+            <option data-name="Bangladesh" value="Bangladesh">Bangladesh</option>
+            <option data-name="Barbados" value="Barbados">Barbados</option>
+            <option data-name="Belarus" value="Belarus">Belarus</option>
+            <option data-name="Belgium" value="Belgium">Belgium</option>
+            <option data-name="Belize" value="Belize">Belize</option>
+            <option data-name="Benin" value="Benin">Benin</option>
+            <option data-name="Bermuda" value="Bermuda">Bermuda</option>
+            <option data-name="Bhutan" value="Bhutan">Bhutan</option>
+            <option data-name="Bolivia" value="Bolivia">Bolivia</option>
+            <option data-name="Bosnia and Herzegovina" value="Bosnia and Herzegovina">Bosnia and Herzegovina</option>
+            <option data-name="Botswana" value="Botswana">Botswana</option>
+            <option data-name="Brazil" value="Brazil">Brazil</option>
+            <option data-name="British Virgin Islands" value="British Virgin Islands">British Virgin Islands</option>
+            <option data-name="Brunei" value="Brunei">Brunei</option>
+            <option data-name="Bulgaria" value="Bulgaria">Bulgaria</option>
+            <option data-name="Burkina Faso" value="Burkina Faso">Burkina Faso</option>
+            <option data-name="Burundi" value="Burundi">Burundi</option>
+            <option data-name="Cambodia" value="Cambodia">Cambodia</option>
+            <option data-name="Cameroon" value="Cameroon">Cameroon</option>
+            <option data-name="Canada" value="Canada">Canada</option>
+            <option data-name="Cape Verde" value="Cape Verde">Cape Verde</option>
+            <option data-name="Cayman Islands" value="Cayman Islands">Cayman Islands</option>
+            <option data-name="Central African Republic" value="Central African Republic">Central African Republic</option>
+            <option data-name="Chad" value="Chad">Chad</option>
+            <option data-name="Chile" value="Chile">Chile</option>
+            <option data-name="China" value="China">China</option>
+            <option data-name="Colombia" value="Colombia">Colombia</option>
+            <option data-name="Comoros" value="Comoros">Comoros</option>
+            <option data-name="Cook Islands" value="Cook Islands">Cook Islands</option>
+            <option data-name="Costa Rica" value="Costa Rica">Costa Rica</option>
+            <option data-name="Croatia" value="Croatia">Croatia</option>
+            <option data-name="CST Trust Company" value="CST Trust Company">CST Trust Company</option>
+            <option data-name="Cuba" value="Cuba">Cuba</option>
+            <option data-name="Curacao" value="Curacao">Curacao</option>
+            <option data-name="Cyprus" value="Cyprus">Cyprus</option>
+            <option data-name="Czech Republic" value="Czech Republic">Czech Republic</option>
+            <option data-name="Democratic Republic of the Congo" value="Democratic Republic of the Congo">Democratic Republic of the Congo</option>
+            <option data-name="Denmark" value="Denmark">Denmark</option>
+            <option data-name="Djibouti" value="Djibouti">Djibouti</option>
+            <option data-name="Dominica" value="Dominica">Dominica</option>
+            <option data-name="Dominican Republic" value="Dominican Republic">Dominican Republic</option>
+            <option data-name="East Timor" value="East Timor">East Timor</option>
+            <option data-name="Ecuador" value="Ecuador">Ecuador</option>
+            <option data-name="Egypt" value="Egypt">Egypt</option>
+            <option data-name="El Salvador" value="El Salvador">El Salvador</option>
+            <option data-name="Equatorial Guinea" value="Equatorial Guinea">Equatorial Guinea</option>
+            <option data-name="Eritrea" value="Eritrea">Eritrea</option>
+            <option data-name="Estonia" value="Estonia">Estonia</option>
+            <option data-name="Ethiopia" value="Ethiopia">Ethiopia</option>
+            <option data-name="Europe Misc" value="Europe Misc">Europe Misc</option>
+            <option data-name="Falkland Islands" value="Falkland Islands">Falkland Islands</option>
+            <option data-name="Faroe Islands" value="Faroe Islands">Faroe Islands</option>
+            <option data-name="Fiji" value="Fiji">Fiji</option>
+            <option data-name="Finland" value="Finland">Finland</option>
+            <option data-name="France" value="France">France</option>
+            <option data-name="French Guiana" value="French Guiana">French Guiana</option>
+            <option data-name="French Polynesia" value="French Polynesia">French Polynesia</option>
+            <option data-name="Gabon" value="Gabon">Gabon</option>
+            <option data-name="Gambia" value="Gambia">Gambia</option>
+            <option data-name="Georgia" value="Georgia">Georgia</option>
+            <option data-name="Germany" value="Germany">Germany</option>
+            <option data-name="Ghana" value="Ghana">Ghana</option>
+            <option data-name="Gibraltar" value="Gibraltar">Gibraltar</option>
+            <option data-name="Greece" value="Greece">Greece</option>
+            <option data-name="Greenland" value="Greenland">Greenland</option>
+            <option data-name="Grenada" value="Grenada">Grenada</option>
+            <option data-name="Guadeloupe" value="Guadeloupe">Guadeloupe</option>
+            <option data-name="Guam" value="Guam">Guam</option>
+            <option data-name="Guatemala" value="Guatemala">Guatemala</option>
+            <option data-name="Guinea" value="Guinea">Guinea</option>
+            <option data-name="Guinea-Bissau" value="Guinea-Bissau">Guinea-Bissau</option>
+            <option data-name="Guyana" value="Guyana">Guyana</option>
+            <option data-name="Haiti" value="Haiti">Haiti</option>
+            <option data-name="Honduras" value="Honduras">Honduras</option>
+            <option data-name="Hong Kong" value="Hong Kong">Hong Kong</option>
+            <option data-name="Hungary" value="Hungary">Hungary</option>
+            <option data-name="Iceland" value="Iceland">Iceland</option>
+            <option data-name="India" value="India">India</option>
+            <option data-name="Indonesia" value="Indonesia">Indonesia</option>
+            <option data-name="Iran" value="Iran">Iran</option>
+            <option data-name="Iraq" value="Iraq">Iraq</option>
+            <option data-name="Ireland" value="Ireland">Ireland</option>
+            <option data-name="Isle of Man" value="Isle of Man">Isle of Man</option>
+            <option data-name="Israel" value="Israel">Israel</option>
+            <option data-name="Italy" value="Italy">Italy</option>
+            <option data-name="Ivory Coast" value="Ivory Coast">Ivory Coast</option>
+            <option data-name="Jamaica" value="Jamaica">Jamaica</option>
+            <option data-name="Japan" value="Japan">Japan</option>
+            <option data-name="Jersey" value="Jersey">Jersey</option>
+            <option data-name="Jordan" value="Jordan">Jordan</option>
+            <option data-name="Kazakhstan" value="Kazakhstan">Kazakhstan</option>
+            <option data-name="Kenya" value="Kenya">Kenya</option>
+            <option data-name="Kiribati" value="Kiribati">Kiribati</option>
+            <option data-name="Kosovo" value="Kosovo">Kosovo</option>
+            <option data-name="Kuwait" value="Kuwait">Kuwait</option>
+            <option data-name="Kyrgyzstan" value="Kyrgyzstan">Kyrgyzstan</option>
+            <option data-name="Laos" value="Laos">Laos</option>
+            <option data-name="Latvia" value="Latvia">Latvia</option>
+            <option data-name="Lebanon" value="Lebanon">Lebanon</option>
+            <option data-name="Lesotho" value="Lesotho">Lesotho</option>
+            <option data-name="Liberia" value="Liberia">Liberia</option>
+            <option data-name="Libya" value="Libya">Libya</option>
+            <option data-name="Liechtenstein" value="Liechtenstein">Liechtenstein</option>
+            <option data-name="Lithuania" value="Lithuania">Lithuania</option>
+            <option data-name="Luxembourg" value="Luxembourg">Luxembourg</option>
+            <option data-name="Macao" value="Macao">Macao</option>
+            <option data-name="Macedonia" value="Macedonia">Macedonia</option>
+            <option data-name="Madagascar" value="Madagascar">Madagascar</option>
+            <option data-name="Malawi" value="Malawi">Malawi</option>
+            <option data-name="Malaysia" value="Malaysia">Malaysia</option>
+            <option data-name="Maldives" value="Maldives">Maldives</option>
+            <option data-name="Mali" value="Mali">Mali</option>
+            <option data-name="Malta" value="Malta">Malta</option>
+            <option data-name="Marshall Islands" value="Marshall Islands">Marshall Islands</option>
+            <option data-name="Martinique" value="Martinique">Martinique</option>
+            <option data-name="Mauritania" value="Mauritania">Mauritania</option>
+            <option data-name="Mauritius" value="Mauritius">Mauritius</option>
+            <option data-name="Mayotte" value="Mayotte">Mayotte</option>
+            <option data-name="Mexico" value="Mexico">Mexico</option>
+            <option data-name="Micronesia" value="Micronesia">Micronesia</option>
+            <option data-name="Moldova" value="Moldova">Moldova</option>
+            <option data-name="Monaco" value="Monaco">Monaco</option>
+            <option data-name="Mongolia" value="Mongolia">Mongolia</option>
+            <option data-name="Montenegro" value="Montenegro">Montenegro</option>
+            <option data-name="Montserrat" value="Montserrat">Montserrat</option>
+            <option data-name="Morocco" value="Morocco">Morocco</option>
+            <option data-name="Mozambique" value="Mozambique">Mozambique</option>
+            <option data-name="Myanmar" value="Myanmar">Myanmar</option>
+            <option data-name="Namibia" value="Namibia">Namibia</option>
+            <option data-name="Nauru" value="Nauru">Nauru</option>
+            <option data-name="Nepal" value="Nepal">Nepal</option>
+            <option data-name="Netherlands" value="Netherlands">Netherlands</option>
+            <option data-name="Netherlands Antilles" value="Netherlands Antilles">Netherlands Antilles</option>
+            <option data-name="New Caledonia" value="New Caledonia">New Caledonia</option>
+            <option data-name="New Zealand" value="New Zealand">New Zealand</option>
+            <option data-name="Nicaragua" value="Nicaragua">Nicaragua</option>
+            <option data-name="Niger" value="Niger">Niger</option>
+            <option data-name="Nigeria" value="Nigeria">Nigeria</option>
+            <option data-name="Northern Mariana Islands" value="Northern Mariana Islands">Northern Mariana Islands</option>
+            <option data-name="North Korea" value="North Korea">North Korea</option>
+            <option data-name="Norway" value="Norway">Norway</option>
+            <option data-name="Oman" value="Oman">Oman</option>
+            <option data-name="Pakistan" value="Pakistan">Pakistan</option>
+            <option data-name="Palau" value="Palau">Palau</option>
+            <option data-name="Palestinian Territory" value="Palestinian Territory">Palestinian Territory</option>
+            <option data-name="Panama" value="Panama">Panama</option>
+            <option data-name="Papua New Guinea" value="Papua New Guinea">Papua New Guinea</option>
+            <option data-name="Paraguay" value="Paraguay">Paraguay</option>
+            <option data-name="Peru" value="Peru">Peru</option>
+            <option data-name="Philippines" value="Philippines">Philippines</option>
+            <option data-name="Poland" value="Poland">Poland</option>
+            <option data-name="Portugal" value="Portugal">Portugal</option>
+            <option data-name="Puerto Rico" value="Puerto Rico">Puerto Rico</option>
+            <option data-name="Qatar" value="Qatar">Qatar</option>
+            <option data-name="Republic of the Congo" value="Republic of the Congo">Republic of the Congo</option>
+            <option data-name="Reunion" value="Reunion">Reunion</option>
+            <option data-name="Romania" value="Romania">Romania</option>
+            <option data-name="Russia" value="Russia">Russia</option>
+            <option data-name="Russian Federation" value="Russian Federation">Russian Federation</option>
+            <option data-name="Rwanda" value="Rwanda">Rwanda</option>
+            <option data-name="Saint Barthelemy" value="Saint Barthelemy">Saint Barthelemy</option>
+            <option data-name="Saint Kitts and Nevis" value="Saint Kitts and Nevis">Saint Kitts and Nevis</option>
+            <option data-name="Saint Lucia" value="Saint Lucia">Saint Lucia</option>
+            <option data-name="Saint Pierre and Miquelon" value="Saint Pierre and Miquelon">Saint Pierre and Miquelon</option>
+            <option data-name="Saint Vincent and the Grenadines" value="Saint Vincent and the Grenadines">Saint Vincent and the Grenadines</option>
+            <option data-name="Samoa" value="Samoa">Samoa</option>
+            <option data-name="San Marino" value="San Marino">San Marino</option>
+            <option data-name="Sao Tome and Principe" value="Sao Tome and Principe">Sao Tome and Principe</option>
+            <option data-name="Saudi Arabia" value="Saudi Arabia">Saudi Arabia</option>
+            <option data-name="Senegal" value="Senegal">Senegal</option>
+            <option data-name="Serbia" value="Serbia">Serbia</option>
+            <option data-name="Serbia and Montenegro" value="Serbia and Montenegro">Serbia and Montenegro</option>
+            <option data-name="Seychelles" value="Seychelles">Seychelles</option>
+            <option data-name="Sierra Leone" value="Sierra Leone">Sierra Leone</option>
+            <option data-name="Singapore" value="Singapore">Singapore</option>
+            <option data-name="Sint Maarten" value="Sint Maarten">Sint Maarten</option>
+            <option data-name="Slovakia" value="Slovakia">Slovakia</option>
+            <option data-name="Slovenia" value="Slovenia">Slovenia</option>
+            <option data-name="Solomon Islands" value="Solomon Islands">Solomon Islands</option>
+            <option data-name="Somalia" value="Somalia">Somalia</option>
+            <option data-name="South Africa" value="South Africa">South Africa</option>
+            <option data-name="South America Misc" value="South America Misc">South America Misc</option>
+            <option data-name="Southern Rhodesia" value="Southern Rhodesia">Southern Rhodesia</option>
+            <option data-name="South Georgia and the South Sandwich Islands" value="South Georgia and the South Sandwich Islands">South Georgia and the South Sandwich Islands</option>
+            <option data-name="South Korea" value="South Korea">South Korea</option>
+            <option data-name="South Sudan" value="South Sudan">South Sudan</option>
+            <option data-name="Spain" value="Spain">Spain</option>
+            <option data-name="Sri Lanka" value="Sri Lanka">Sri Lanka</option>
+            <option data-name="Sub Sahara Misc" value="Sub Sahara Misc">Sub Sahara Misc</option>
+            <option data-name="Sudan" value="Sudan">Sudan</option>
+            <option data-name="Suriname" value="Suriname">Suriname</option>
+            <option data-name="Swaziland" value="Swaziland">Swaziland</option>
+            <option data-name="Sweden" value="Sweden">Sweden</option>
+            <option data-name="Switzerland" value="Switzerland">Switzerland</option>
+            <option data-name="Syria" value="Syria">Syria</option>
+            <option data-name="Taiwan" value="Taiwan">Taiwan</option>
+            <option data-name="Republic Of China" value="Taiwan">Taiwan</option>
+            <option data-name="Tajikistan" value="Tajikistan">Tajikistan</option>
+            <option data-name="Tanzania" value="Tanzania">Tanzania</option>
+            <option data-name="Thailand" value="Thailand">Thailand</option>
+            <option data-name="Togo" value="Togo">Togo</option>
+            <option data-name="Tonga" value="Tonga">Tonga</option>
+            <option data-name="Trinidad and Tobago" value="Trinidad and Tobago">Trinidad and Tobago</option>
+            <option data-name="Tunisia" value="Tunisia">Tunisia</option>
+            <option data-name="Turkey" value="Turkey">Turkey</option>
+            <option data-name="Turkmenistan" value="Turkmenistan">Turkmenistan</option>
+            <option data-name="Turks and Caicos Islands" value="Turks and Caicos Islands">Turks and Caicos Islands</option>
+            <option data-name="U.S. Virgin Islands" value="U.S. Virgin Islands">U.S. Virgin Islands</option>
+            <option data-name="Uganda" value="Uganda">Uganda</option>
+            <option data-name="Ukraine" value="Ukraine">Ukraine</option>
+            <option data-name="United Arab Emirates" value="United Arab Emirates">United Arab Emirates</option>
+            <option data-name="United Kingdom" value="United Kingdom">United Kingdom</option>
+            <option data-name="United States" value="United States">United States</option>
+            <option data-name="United States Minor Outlying Islands" value="United States Minor Outlying Islands">United States Minor Outlying Islands</option>
+            <option data-name="Unknown Country" value="Unknown Country">Unknown Country</option>
+            <option data-name="Uruguay" value="Uruguay">Uruguay</option>
+            <option data-name="USSR" value="USSR">USSR</option>
+            <option data-name="Uzbekistan" value="Uzbekistan">Uzbekistan</option>
+            <option data-name="Vanuatu" value="Vanuatu">Vanuatu</option>
+            <option data-name="Venezuela" value="Venezuela">Venezuela</option>
+            <option data-name="Vietnam" value="Vietnam">Vietnam</option>
+            <option data-name="Yemen" value="Yemen">Yemen</option>
+            <option data-name="Yugoslavia" value="Yugoslavia">Yugoslavia</option>
+            <option data-name="Zambia" value="Zambia">Zambia</option>
+            <option data-name="Zimbabwe" value="Zimbabwe">Zimbabwe</option>
+        </select>
+        <div class="error-notice"></div>
+       </div>
+      </div>
+  
+      <div class="form__element form__element--50">
+       <label class="form__element__label">Your Age</label>
+       <div class="form__element__container">
+        <select  name="IndividualsAge" id="IndividualsAge">
+         <option value="" selected>Select your age</option>
+          <option data-name="Less than 25" value="Less than 25">Less than 25</option>
+          <option data-name="26-35" value="25-35">26-35</option>
+          <option data-name="36-45" value="35-45">36-45</option>
+          <option data-name="45+" value="45+">45+</option>
+        </select>
+        <div class="error-notice"></div>
+       </div>
+      </div>
+  
+      <div class="form__element form__element--66">
+       <label class="form__element__label"
+        >In what setting do you want to use the content?</label>
+       <textarea type="text" rows="4" name="RMC_Content_Usage"></textarea>
+       <div class="error-notice"></div>
+      </div>
+  
+      <div class="form__element form__element--66">
+       <label class="form__checkbox__label">
+        I authorise Airbus to collect my personal data in order
+        to regularly send me “Airbus Foundation Discovery Space”
+        newsletter and related communications. See
+        <a
+         href="https://cloud.contact.airbus.com/privacy-policy.html"
+         target="_blank"
+         rel="noopener"
+         >Privacy Policy</a>.*
+        <input
+         type="checkbox"
+         name="consent"
+         value="consent"
+         required/>
+
+        <span class="checkbox__square"></span>
+        <div class="error-notice">
+         You must agree to provide your consent before
+         submitting your personal data
+        </div>
+       </label>
+      </div>
+  
+      <div class="form__element form__element--100">
+        <input name="submitted" value="true" type="hidden">
+       <button type="submit" value="submitted" id="submit" name="action">
+        Submit
+       </button>
+      </div>
+  
+      <div class="form__notice form__element--100">
+       <p>* Mandatory field</p>
+      </div>
+     </form>
+
+     %%[ ENDIF ]%%
+
+    </main>
+   </body>
+
+
+   <script src="%%=CloudPagesURL(1534)=%%"></script>
+  </html>
+   <script runat="server">
+    }catch (err) {
+     
+      Write("<h3>Ouch!! There is a problem</h3><p><em>Message</em>: " 
+            + Stringify(err.message) + "</p><p><em>Description: </em> " 
+            + Stringify(err.description) + "</p>");
+     
+      var mucount = Variable.GetValue("@count");
+      Write("Count: " + mucount + "<br>");
+      var action = Variable.GetValue("@action");
+      Write("Action: " + action + "<br>");
+      var coID = Variable.GetValue("@ContactID");
+      Write("Contact ID: " + coID + "<br>");
+  
+      var accID = Variable.GetValue("@AccountID");
+      Write("Account ID: " + accID + "<br>");
+      
+      var es = Variable.GetValue("@errorSubmit");
+      Write("Error Submit: " + es + "<br>");
+  
+          var ln = Variable.GetValue("@Lastname");
+      Write("Lastname: " + ln + "<br>");
+  
+          var fn = Variable.GetValue("@Firstname");
+      Write("First Name: " + fn + "<br>");
+  
+    var uc = Variable.GetValue("@updateContact");
+      Write("Update Contact: " + es + "<br>");
+  
+    }
+  </script>
+  
