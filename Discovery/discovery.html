@@ -74,32 +74,32 @@
 
       /* Create contact */
 
-      SET @createContact = CreateSalesforceObject(
-        "Contact", 10,
-        "firstname", @Firstname,
-        "lastname", @Lastname,
-        "Email", @Email,
-        "RMC_Profile__c", @RMC_Profile,
-        "MailingCountry", @MailingCountry,
-        "RMC_Age_of_Students__c", @RMC_Age_of_Students,
-        "AccountID", @AccountID,
-        "RecordTypeId", "0120Y000000aJbtQAE",
-        "RMC_Content_Usage__c", @RMC_Content_Usage,
-        "RMC_Airbus_Foundation_Discovery_Space__c", "true")
-  
-        /* Create related Individual */
+        SET @createContact = CreateSalesforceObject(
+          "Contact", 10,
+          "firstname", @Firstname,
+          "lastname", @Lastname,
+          "Email", @Email,
+          "RMC_Profile__c", @RMC_Profile,
+          "MailingCountry", @MailingCountry,
+          "RMC_Age_of_Students__c", @RMC_Age_of_Students,
+          "AccountID", @AccountID,
+          "RecordTypeId", "0120Y000000aJbtQAE",
+          "RMC_Content_Usage__c", @RMC_Content_Usage,
+          "RMC_Airbus_Foundation_Discovery_Space__c", "true")
+    
+          /* Create related Individual */
 
-        SET @createIndividual = CreateSalesforceObject(
-                                            "Individual", 4,
-                                            "FirstName", @Firstname,
-                                            "LastName", @Lastname,
-                                            "Contact__c", @createContact,
-                                            "IndividualsAge", @IndividualsAge
-                                            )        
+          SET @createIndividual = CreateSalesforceObject(
+                                              "Individual", 4,
+                                              "FirstName", @Firstname,
+                                              "LastName", @Lastname,
+                                              "Contact__c", @createContact,
+                                              "IndividualsAge", @IndividualsAge
+                                              )        
 
-   
-        SET @ShowConfirmationMessage = "true"
-        SET @errorMessage = "creating contacting"
+    
+          SET @ShowConfirmationMessage = "true"
+          SET @errorMessage = "creating contacting"
 
   
       ELSEIF @action == "submitted" AND @count != 0 AND @Subscribed==false THEN
